@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sách sinh viên</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Danh sách sinh viên</h2>
+
+    <input type="file" id="fileInput">
+
+    <table>
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Mã SV</th>
+                <th>Họ tên</th>
+                <th>Email</th>
+                <th>Khóa</th>
+                <th>Khoa</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+    <script>
+        class Student {
+            constructor(stt, studentId, fullName) {
+                this.stt = stt || "";
+                this.studentId = String(studentId || "");
+                this.fullName = String(fullName || "");
+
+                this.email = this.generateEmail();
+                this.course = this.getCourse();
+                this.faculty = this.getFaculty();
+            }
+
+            removeVietnamese(str) {
+                return str.normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "")
+                    .replace(/đ/g, "d")
+                    .replace(/Đ/g, "D");
+            }
+
+ getNameParts() {
+    let cleanName = this.fullName.replace(/\(.*?\)/g, "").trim();
+    let name = this.removeVietnamese(cleanName.toLowerCase());
+
+    let parts = name.split(/\s+/);
+
+    let firstName = parts.pop() || "";
+    let lastName = parts.shift() || "";
+    let middleName = parts.join("");
+
+    return { firstName, lastName, middleName };
+}
+
+            generateEmail() {
+                let { firstName, lastName, middleName } = this.getNameParts();
+
+                let emailName =
+                    firstName +
+                    (lastName ? lastName.charAt(0) : "") +
+                    (middleName.charAt(0) || "");
+
+                return `${emailName}.${this.studentId.toLowerCase()}@hvnh.edu.vn`;
+            }
+
+            getCourse() {
+                return "K" + this.studentId.substring(0, 2);
+            }
+
+            getFaculty() {
+                let facultyCode = this.studentId.substring(3, 6);
+
+                switch (facultyCode) {
+                    case "404": return "CNTT & KTS";
+                    case "401": return "KHDL";
+                    case "402": return "Ngân hàng";
+                    case "407": return "Kinh tế";
+                    case "403": return "QTKD";
+                    case "405": return "KDQT";
+                    case "406": return "Luật";
+                    default: return "Không xác định";
+                }
+            }
+        }
+
+        let students = [];
+
+        document.getElementById("fileInput").addEventListener("change", function (e) {
+            let file = e.target.files[0];
+            let reader = new FileReader();
+
+            reader.onload = function (e) {
+                let data = new Uint8Array(e.target.result);
+                let workbook = XLSX.read(data, { type: "array" });
+
+                let sheet = workbook.Sheets[workbook.SheetNames[0]];
+
+                students = [];
+
+                let ref = sheet['!ref'];
+                let range = XLSX.utils.decode_range(ref);
+
+                for (let row = 1; row <= range.e.r; row++) {
+                    let stt = sheet[XLSX.utils.encode_cell({ r: row, c: 0 })]?.v;
+                    let msv = sheet[XLSX.utils.encode_cell({ r: row, c: 1 })]?.v;
+                    let hoten = sheet[XLSX.utils.encode_cell({ r: row, c: 2 })]?.v;
+
+                    if (!msv || !hoten) continue;
+
+                    students.push(new Student(stt, msv, hoten));
+                }
+
+                renderTable();
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        function renderTable() {
+            let table = document.getElementById("tableBody");
+            let html = "";
+
+            students.forEach(sv => {
+                html += `
+            <tr>
+                <td>${sv.stt}</td>
+                <td>${sv.studentId}</td>
+                <td>${sv.fullName}</td>
+                <td>${sv.email}</td>
+                <td>${sv.course}</td>
+                <td>${sv.faculty}</td>
+            </tr>
+        `;
+            });
+            table.innerHTML = html;
+        }
+    </script>
+
+</body>
+
+</html>

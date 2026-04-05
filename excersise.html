@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Bài tập</title>
+</head>
+<body>
+    <script>
+    let Doibong = {
+        teamName: " ",
+        coachName: "Pham Trung Duc",
+        players: [
+        {
+            name: "Cristiano Ronaldo",
+            age: 38,
+            position: "Tien dao",
+            number: 7,
+            isInjured: true,
+        },
+        {
+            name: "Lionel Messi",
+            age: 36,
+            position: "Canh trai",
+            number: 10,
+            isInjured: false,
+        },
+        {
+            name: "Neymar Jr",
+            age: 32,
+            position: "Thu mon",
+            number: 7,
+            isInjured: false,
+        }
+        ],
+        addPlayer: function(name, age, position, number, isInjured) {
+        let player = {
+            name: name,
+            age: age,
+            position: position,
+            number: number,
+            isInjured: isInjured
+        };
+        this.players.push(player);
+        },
+
+        listPlayers: function(){
+            this.players.forEach(function(player){
+                console.log("Tuổi: " + player.age);
+                console.log("Vị trí: " + player.position);
+                console.log("Tên: " + player.name);
+                console.log("Số áo: " + player.number);
+                console.log("Bị thương: " + (player.isInjured ? "Có" : "Không"));
+            });
+        },
+        getInjuredPlayers: function(){
+            return this.players.filter(function(player){
+                return player.isInjured;
+            });
+        },
+        teamInfo: function(){
+            console.log("Tên đội: " + this.teamName);
+            console.log("HLV: " + this.coachName);
+            console.log("Danh sách cầu thủ:");
+        }
+    }
+
+    
+
+
+</script>
+</body>
+</html>
